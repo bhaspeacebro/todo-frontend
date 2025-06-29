@@ -25,6 +25,7 @@ function App() {
       localStorage.setItem("token", res.token);
       setToken(res.token);
       setMessage("Login successful ✅");
+      await handleLoadTasks();
     } else {
       setMessage(res.message || "Login failed ❌");
     }
@@ -38,29 +39,42 @@ function App() {
   };
 
   const handleLoadTasks = async () => {
-    const res = await getTasks(token);
-    setTasks(res);
-    setMessage("Tasks loaded.");
+    try {
+      const res = await getTasks(token);
+      setTasks(res);
+      setMessage("Tasks loaded ✅");
+    } catch (err) {
+      console.error("❌ Load tasks error:", err.message);
+      setMessage("Failed to load tasks.");
+    }
   };
 
   const handleAddTask = async () => {
-    await fetch("https://todo-api-pfod.onrender.com/api/tasks", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ title: newTask }),
-    });
-    setNewTask("");
-    setMessage("Task added.");
-    handleLoadTasks();
+    try {
+      await fetch("https://todo-api-pfod.onrender.com/api/tasks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ title: newTask }),
+      });
+      setNewTask("");
+      setMessage("Task added.");
+      handleLoadTasks();
+    } catch (err) {
+      setMessage("Failed to add task.");
+    }
   };
 
   const handleDeleteTask = async (id) => {
-    await deleteTask(id, token);
-    setMessage("Task deleted.");
-    handleLoadTasks();
+    try {
+      await deleteTask(id, token);
+      setMessage("Task deleted.");
+      handleLoadTasks();
+    } catch (err) {
+      setMessage("Failed to delete task.");
+    }
   };
 
   return (
